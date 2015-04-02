@@ -80,7 +80,6 @@ window.findNQueensSolution = function(n, countN) {
       if(takenMinor[minorD]){
         placeable = false;
       }
-
       if(placeable){
         board[row][i] = 1;
         takenColumns[i] = 1;
@@ -99,7 +98,6 @@ window.findNQueensSolution = function(n, countN) {
 
 
   console.log('Single solution for ' + n + ' queens:', JSON.stringify(solution));
-  debugger;
   if (countN){
     return solutionCount;
   }
@@ -110,7 +108,7 @@ window.findNQueensSolution = function(n, countN) {
 // return the number of nxn chessboards that exist, with n queens placed such that none of them can attack each other
 window.countNQueensSolutions = function(n) {
 
-  return findNQueensSolution(n, true);
+  return bitSolver(n);
 
 };
 
@@ -146,4 +144,65 @@ var copyMachine = function(array){
     }
   }
   return copied;
+};
+
+var bitSolver = function(n){
+
+  var solutionCount = 0;
+  var takenColumns = 0;
+
+  var takenMinor = 0;
+  //make offset to account for different counting pattern.. n-1  or -3 -- +3 offset to equal 0 - 7
+  //col - row + n-1
+  var takenMajor = 0;
+
+
+  var queenMaker = function(queenCount){
+    if (queenCount === 0){
+      solutionCount++;
+      return;
+    }
+    var columnCounter = 1;
+    var majorCounter = 1 <<  queenCount - 1;
+    var minorCounter = 1 << n - queenCount;
+
+
+    for (var i = 0; i < n; i++){
+      var placeable = true;
+
+      if(takenColumns & columnCounter){
+        placeable = false;
+      }
+      if(takenMajor & majorCounter){
+        placeable = false;
+      }
+      if(takenMinor & minorCounter){
+        placeable = false;
+      }
+      if(placeable){
+        var columns = takenColumns;
+        var majors = takenMajor;
+        var minors = takenMinor;
+
+        takenColumns = takenColumns | columnCounter;
+        takenMajor = takenMajor | majorCounter;
+        takenMinor = takenMinor | minorCounter;
+        queenMaker(queenCount - 1);
+        takenColumns = columns;
+        takenMajor = majors;
+        takenMinor = minors;
+
+      }
+      columnCounter = columnCounter << 1;
+      majorCounter = majorCounter << 1;
+      minorCounter = minorCounter << 1;
+    }
+
+  };
+  queenMaker(n);
+
+
+  console.log('Single solution for ' + n + ' queens:', JSON.stringify(solutionCount));
+
+  return solutionCount;
 };
