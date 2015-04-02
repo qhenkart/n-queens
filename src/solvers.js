@@ -149,53 +149,45 @@ var copyMachine = function(array){
 var bitSolver = function(n){
 
   var solutionCount = 0;
-  var takenColumns = 0;
 
-  var takenMinor = 0;
-  //make offset to account for different counting pattern.. n-1  or -3 -- +3 offset to equal 0 - 7
-  //col - row + n-1
-  var takenMajor = 0;
+  var takenColumns = ~0;
+  var takenMinor = ~0;
+  var takenMajor = ~0;
 
 
   var queenMaker = function(queenCount){
-    if (queenCount === 0){
+    if (!queenCount){
       solutionCount++;
       return;
     }
-    var columnCounter = 1;
-    var majorCounter = 1 <<  queenCount - 1;
-    var minorCounter = 1 << n - queenCount;
 
 
-    for (var i = 0; i < n; i++){
-      var placeable = true;
 
-      if(takenColumns & columnCounter){
-        placeable = false;
-      }
-      if(takenMajor & majorCounter){
-        placeable = false;
-      }
-      if(takenMinor & minorCounter){
-        placeable = false;
-      }
-      if(placeable){
-        var columns = takenColumns;
-        var majors = takenMajor;
-        var minors = takenMinor;
+    for (var pointerMarker = 1 << 14; pointerMarker < 1 << 14 + n; pointerMarker = pointerMarker << 1){
 
-        takenColumns = takenColumns | columnCounter;
-        takenMajor = takenMajor | majorCounter;
-        takenMinor = takenMinor | minorCounter;
+      if(takenColumns & takenMinor & takenMajor & pointerMarker){
+
+
+        takenColumns = takenColumns & (~pointerMarker);
+        takenMajor = takenMajor & (~pointerMarker);
+        takenMinor = takenMinor & (~pointerMarker);
+
+        takenMajor = takenMajor >> 1;
+        takenMinor = takenMinor << 1;
+
+
         queenMaker(queenCount - 1);
-        takenColumns = columns;
-        takenMajor = majors;
-        takenMinor = minors;
+
+        takenMajor = takenMajor << 1;
+        takenMinor = takenMinor >> 1;
+
+        takenColumns = takenColumns | pointerMarker;
+        takenMajor = takenMajor | pointerMarker;
+        takenMinor = takenMinor | pointerMarker;
 
       }
-      columnCounter = columnCounter << 1;
-      majorCounter = majorCounter << 1;
-      minorCounter = minorCounter << 1;
+
+
     }
 
   };
@@ -206,3 +198,5 @@ var bitSolver = function(n){
 
   return solutionCount;
 };
+
+
